@@ -3,6 +3,13 @@ import { useNavigate} from "react-router-dom";
 import { useState } from "react";
 import { dummyProducts } from "../assets/assets";
 import toast from "react-hot-toast";
+import axios from 'axios';
+
+//send cookies in API request
+axios.defaults.withCredentials = true;
+
+//connecting backend using axios
+axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL
 
 export const AppContext = createContext();
 
@@ -76,17 +83,77 @@ export const AppContextProvider = ({children}) => {
     return Math.floor(totalAmount*100)/100;
   }
 
+  //Fetch user Auth Status , User data+cart Items
+  const fetchUser = async()=>{
+    try{
+      const {data} = await axios.get('/api/user/is-auth');
+      if(data.success){
+        setUser(data.user)
+        setCartItems(data.user.cartItems)
+      }
+    }catch(e){
+      setUser(null);
+    }
+  }
+
+  //Fetch Seller status
+  const fetchSeller = async() => {
+    try{
+      const {data} = await axios.get('/api/seller/is-auth');
+      if(data.success){
+        setIsSeller(true);
+      }
+      else{
+        setIsSeller(false);
+      }
+    }catch(error){
+      setIsSeller(false);
+    }
+  }
+
   //Fetch all products
   const fetchProducts = async () => {
-    setProducts(dummyProducts)
+    // setProducts(dummyProducts)
+    try{
+      const {data} = await axios.get('/api/product/list')
+      if(data.success){
+        setProducts(data.products);
+      }else{
+        toast.error(data.message)
+      }
+    }catch(error){
+      toast.error(error.message)
+    }
   }
 
   useEffect(()=>{
+    fetchSeller();
+    fetchUser();
     fetchProducts();
   },[])
 
+  //Update Databse Cart Items
+  useEffect(()=>{
+    const updateCart = async ()=>{
+      try{
+        const {data} = await axios.post('/api/cart/update' , {
+          userId: user._id,   
+          cartItems
+        })
+        if(!data.success){
+          toast.error(data.message)
+        }
+      }catch(error){
+        toast.error(error.message)
+      }
+    }
+    if(user){
+      updateCart();
+    }
+  },[cartItems, user])
 
-  const value = {navigate, user, setUser, isSeller, setIsSeller , showUserLogin, setShowUserLogin , products , currency , addToCart , updateCartItem , removeFromCart, cartItems,searchQuery,setSearchQuery , getCartCount, getCartAmount}; 
+
+  const value = {navigate, user, setUser, isSeller, setIsSeller , showUserLogin, setShowUserLogin , products , currency , addToCart , updateCartItem , removeFromCart, cartItems,searchQuery,setSearchQuery , getCartCount, getCartAmount , axios ,fetchProducts ,fetchUser , setCartItems}; 
 
   return <AppContext.Provider value={value}>
     {children}

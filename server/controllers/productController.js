@@ -1,5 +1,13 @@
 import { v2 as cloudinary } from "cloudinary";
+// import cloudinary from "../config/cloudinary.js";
+
 import Product from "../models/Product.js";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // Add Product : /api/product/add
 export const addProduct = async (req, res) => {

@@ -15,13 +15,15 @@ export const addAddress = async ( req , res) => {
 
 // Get Address : /api/address/get
 export const getAddress = async ( req , res) => {
-  try { 
-    const {address , userId} = req.body
-    const addresses = await Address.find({userId})
-        res.json({success:true , addresses})
-  } catch(e) {
-    console.log(e.message)
-    res.json({success:false , message:e.message})
+  try {
+    const { userId } = req.body; // ✅ This works only with POST
+    const addresses = await Address.find({ userId });
+    res.json({ success: true, addresses });
+  } catch (e) {
+    console.log(e.message);
+    res.json({ success: false, message: e.message });
   }
-}
+};
+
+
 
